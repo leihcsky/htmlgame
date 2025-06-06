@@ -1,0 +1,145 @@
+<div x-data="{
+    games: [],
+    originalGames: [],
+    displayedGames: [],
+    currentPage: 1,
+    gamesPerPage: 70,
+    categoryTitle: '',
+    recentGames: [],
+    searchTerm: '',
+    
+    // 添加搜索方法
+    search(term) {
+        if (!term.trim()) {
+            // 如果搜索框为空，重置为原始列表
+            this.resetSearch();
+            return;
+        }
+
+        this.searchTerm = term.toLowerCase();
+        this.currentPage = 1;
+        this.displayedGames = [];
+        
+        // 根据当前页面类型（分类/最近）在对应的游戏列表中搜索
+        const searchBase = this.games;
+        const filteredGames = searchBase.filter(game => 
+            game.title.toLowerCase().includes(this.searchTerm) ||
+            game.tags.toLowerCase().includes(this.searchTerm)
+        );
+        
+        this.games = filteredGames;
+        this.loadMoreGames();
+    },
+    
+    // 重置搜索
+    resetSearch() {
+        this.searchTerm = '';
+        this.currentPage = 1;
+        this.displayedGames = [];
+        
+        // 根据当前页面类型恢复对应的游戏列表
+        const hash = window.location.hash.slice(1);
+        if (hash.startsWith('category/')) {
+            const category = hash.split('/').pop();
+            this.games = this.originalGames.filter(game => {
+                const tags = game.tags.toLowerCase();
+                return tags.includes(category.toLowerCase());
+            });
+        } else if (hash === 'recent') {
+            this.games = this.originalGames.filter(game => this.recentGames.includes(game.title));
+        } else {
+            this.games = [...this.originalGames];
+        }
+        
+        this.loadMoreGames();
+    },
+
+    // 修改初始化方法
+    async init() {
+        const response = await fetch('/contents/config.json');
+        const allGames = await response.json();
+        this.originalGames = allGames;
+        
+        // 从localStorage获取最近玩过的游戏
+        const recent = localStorage.getItem('recentGames');
+        this.recentGames = recent ? JSON.parse(recent) : [];
+        
+        // 根据URL判断显示类型
+        const hash = window.location.hash.slice(1);
+        if (hash.startsWith('category/')) {
+            const category = hash.split('/').pop();
+            this.categoryTitle = category.charAt(0).toUpperCase() + category.slice(1) + ' Games';
+            this.games = this.originalGames.filter(game => {
+                const tags = game.tags.toLowerCase();
+                return tags.includes(category.toLowerCase());
+            });
+        } else if (hash === 'recent') {
+            this.categoryTitle = 'Recently Played Games';
+            this.games = this.originalGames.filter(game => this.recentGames.includes(game.title));
+        } else {
+            this.games = [...this.originalGames];
+        }
+        
+        this.loadMoreGames();
+        
+        // 监听搜索框的输入事件
+        document.getElementById('gameSearch').addEventListener('input', (e) => {
+            this.search(e.target.value);
+        });
+    },
+
+    // 加载更多游戏
+    loadMoreGames() {
+        const start = (this.currentPage - 1) * this.gamesPerPage;
+        const end = start + this.gamesPerPage;
+        const newGames = this.games.slice(start, end);
+        this.displayedGames = [...this.displayedGames, ...newGames];
+        this.currentPage++;
+    },
+
+    // 添加检查是否有更多游戏的方法
+    hasMoreGames() {
+        return this.displayedGames.length < this.games.length;
+    }
+}">
+    <!-- Category Title -->
+    <h1 x-show="categoryTitle" x-text="categoryTitle" class="text-3xl font-bold text-center mb-8 text-gray-800"></h1>
+
+    <!-- Games Grid -->
+    <section class="games-grid mb-12">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
+            <template x-for="game in displayedGames" :key="game.title">
+                <div class="game-card bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <a :href="'#/games/' + game.title.toLowerCase().replace(/ /g, '-')" class="block h-full">
+                        <div class="game-thumbnail relative aspect-square overflow-hidden bg-gray-100">
+                            <img :src="game.image" :alt="game.title" 
+                                 class="absolute inset-0 w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                                 onerror="if(!this.hasError){this.hasError=true;this.src='/images/game-placeholder.jpg';}">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center">
+                                <span class="text-white opacity-0 hover:opacity-100 transition-opacity duration-300 font-semibold">Play Now</span>
+                            </div>
+                        </div>
+                        <div class="game-info p-3">
+                            <h3 class="game-title text-lg font-bold mb-2 text-gray-800 line-clamp-1" x-text="game.title"></h3>
+                            <div class="flex flex-wrap gap-1">
+                                <template x-for="tag in game.tags.split(',').slice(0, 3)" :key="tag">
+                                    <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full" x-text="tag"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </template>
+        </div>
+    </section>
+
+    <!-- Load More Button -->
+    <div class="text-center mb-12" x-show="hasMoreGames()">
+        <button 
+            @click="loadMoreGames()"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg"
+        >
+            View More Games
+        </button>
+    </div>
+</div>

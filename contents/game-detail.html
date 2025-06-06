@@ -1,0 +1,147 @@
+<div x-data="{
+    game: null,
+    isFullscreen: false,
+    async init() {
+        try {
+            const gameId = window.location.hash.split('/').pop();
+            const response = await fetch('/contents/config.json');
+            const games = await response.json();
+            this.game = games.find(g => g.title.toLowerCase().replace(/ /g, '-') === gameId);
+            
+            if (!this.game) {
+                throw new Error('Game not found');
+            }
+            
+            // 记录最近玩过的游戏
+            let recentGames = localStorage.getItem('recentGames');
+            recentGames = recentGames ? JSON.parse(recentGames) : [];
+            
+            // 如果游戏已在列表中，先移除它
+            const index = recentGames.indexOf(this.game.title);
+            if (index > -1) {
+                recentGames.splice(index, 1);
+            }
+            
+            // 将游戏添加到列表开头
+            recentGames.unshift(this.game.title);
+            
+            // 只保留最近的10个游戏
+            recentGames = recentGames.slice(0, 10);
+            
+            localStorage.setItem('recentGames', JSON.stringify(recentGames));
+            
+            this.loading = false;
+        } catch (error) {
+            this.error = error.message;
+            this.loading = false;
+        }
+    },
+    toggleFullscreen() {
+        const iframe = document.querySelector('iframe');
+        if (!iframe) return;
+
+        if (!this.isFullscreen) {
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) {
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) {
+                iframe.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+        this.isFullscreen = !this.isFullscreen;
+    }
+}" x-init="init()" x-cloak>
+    <!-- 添加加载状态显示 -->
+    <template x-if="!game">
+        <div class="flex items-center justify-center min-h-[400px]">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p class="text-gray-600">Loading game details...</p>
+            </div>
+        </div>
+    </template>
+
+    <!-- 游戏内容 -->
+    <template x-if="game">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <!-- Back to Home button -->
+            <a href="javascript:void(0)" 
+               @click="window.history.back()" 
+               class="inline-flex items-center gap-2 px-4 py-2 mb-6 text-white bg-apple-blue rounded-full hover:bg-apple-darkblue transition-all duration-300 group">
+                <i class="fas fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
+                <span>Back</span>
+            </a>
+
+            <!-- Game Title Section -->
+            <section class="mb-12 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4" x-text="game.title"></h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto" x-text="game.description"></p>
+            </section>
+
+            <!-- Game Content Section -->
+            <section class="mb-12">
+                <div class="game-container shadow-xl rounded-lg overflow-hidden">
+                    <iframe :src="game.embed" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
+                </div>
+                <div class="text-center mt-6">
+                    <button @click="toggleFullscreen" class="btn-play text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg inline-flex items-center gap-2">
+                        <i class="fas" :class="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
+                        <span x-text="isFullscreen ? 'Exit Fullscreen' : 'Play Fullscreen'"></span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- How to Play Section -->
+            <section class="mb-12">
+                <h2 class="text-3xl font-bold mb-6">How to Play</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <p class="mb-4" x-text="game.description"></p>
+                    <div class="mt-6">
+                        <h3 class="text-xl font-bold mb-3">Controls</h3>
+                        <ul class="list-disc pl-6 mb-4">
+                            <li class="mb-2">Use WASD or arrow keys to move</li>
+                            <li class="mb-2">Click or tap to interact</li>
+                            <li class="mb-2">Press Spacebar to pause</li>
+                            <li class="mb-2">Use ESC to exit fullscreen</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Game Tags Section -->
+            <section class="mb-12">
+                <h2 class="text-3xl font-bold mb-6">Game Categories</h2>
+                <div class="flex flex-wrap gap-3">
+                    <template x-for="tag in game.tags.split(',')" :key="tag">
+                        <a href="#" class="px-6 py-3 bg-white text-apple-blue hover:bg-apple-blue hover:text-white rounded-full shadow-md transition-all duration-300 flex items-center gap-2">
+                            <i class="fas fa-tag"></i>
+                            <span x-text="tag.trim().charAt(0).toUpperCase() + tag.trim().slice(1)"></span>
+                        </a>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Tips & Strategies Section -->
+            <section class="mb-12">
+                <h2 class="text-3xl font-bold mb-6">Tips & Strategies</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <ul class="list-disc pl-6">
+                        <li class="mb-2">Take your time to learn the game mechanics</li>
+                        <li class="mb-2">Pay attention to power-ups and special items</li>
+                        <li class="mb-2">Practice makes perfect - don't give up!</li>
+                        <li class="mb-2">Try different strategies to find what works best</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </template>
+</div>

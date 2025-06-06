@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayGame.click - Your Ultimate Gaming Hub</title>
+    <meta name="description" content="Play the best online games for free. Browse our collection of action, puzzle, strategy and more games. No downloads required!">
+    <link rel="canonical" href="https://playgame.click">
+    <meta name="keywords" content="online games, free games, browser games, action games, puzzle games, strategy games">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 添加Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 在</head>标签前添加 -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        apple: {
+                            gray: '#f5f5f7',
+                            blue: '#0071e3',
+                            darkblue: '#0077ED',
+                            black: '#1d1d1f',
+                            white: '#ffffff',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            overflow-x: hidden;
+        }
+        .game-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        .game-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .btn-play {
+            background-color: #0071e3;
+            transition: all 0.3s ease;
+        }
+        .btn-play:hover {
+            background-color: #0077ED;
+            transform: scale(1.05);
+        }
+        
+        /* 侧边导航栏样式 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background-color: #1d1d1f;
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-collapsed {
+            width: 60px;
+        }
+        
+        .sidebar-expanded {
+            width: 240px;
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            min-width: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .nav-text {
+            transition: all 0.3s ease;
+            opacity: 1;
+            margin-left: 10px;
+            width: auto;
+        }
+        
+        .sidebar-collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+            margin-left: 0;
+            display: none;
+        }
+        
+        .category-title {
+            padding: 10px 15px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        
+        .sidebar-collapsed .category-title {
+            opacity: 0;
+            display: none;
+        }
+        
+        /* 调整主内容区域 */
+        .content-container {
+            transition: margin-left 0.3s ease;
+        }
+        
+        .content-shifted {
+            margin-left: 60px;
+        }
+        
+        .content-expanded {
+            margin-left: 240px;
+        }
+        
+        /* 游戏卡片样式 */
+        .game-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background-color: white;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+        
+        .game-thumbnail {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+        
+        .game-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            display: block;
+        }
+        
+        .game-card:hover .game-thumbnail img {
+            transform: scale(1.1);
+        }
+        
+        .game-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .game-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .game-category {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .featured-section {
+            background: linear-gradient(135deg, #0071e3 0%, #00a1ff 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        /* 防止图片加载时的布局变化 */
+        .game-card a {
+            display: block;
+            height: 100%;
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边导航栏 -->
+    <div class="sidebar sidebar-collapsed" id="sidebar">
+        <div class="sidebar-header">
+            <button class="toggle-btn" id="toggleSidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <a href="" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-home"></i></div>
+            <span class="nav-text">Home</span>
+        </a>
+        <a href="#recent" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-history"></i></div>
+            <span class="nav-text">Recently Played</span>
+        </a>
+        <div class="category-title">
+            <span class="nav-text">Game Categories</span>
+        </div>
+        
+        <a href="#category/2d" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-square"></i></div>
+            <span class="nav-text">2D Games</span>
+        </a>
+        
+        <a href="#category/3d" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-cube"></i></div>
+            <span class="nav-text">3D Games</span>
+        </a>
+        
+        <a href="#category/action" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-running"></i></div>
+            <span class="nav-text">Action Games</span>
+        </a>
+        
+        <a href="#category/puzzle" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-puzzle-piece"></i></div>
+            <span class="nav-text">Puzzle Games</span>
+        </a>
+        
+        <a href="#category/arcade" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-gamepad"></i></div>
+            <span class="nav-text">Arcade Games</span>
+        </a>
+        
+        <a href="#category/racing" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-car"></i></div>
+            <span class="nav-text">Racing Games</span>
+        </a>
+        
+        <a href="#category/strategy" class="nav-item">
+            <div class="nav-icon"><i class="fas fa-chess"></i></div>
+            <span class="nav-text">Strategy Games</span>
+        </a>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content-container content-shifted" id="content">
+        <header class="bg-apple-white shadow-md">
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="text-2xl font-bold text-apple-blue">
+                        <a href="https://playgame.click" class="hover:text-apple-darkblue transition-colors">PlayGame.click</a>
+                    </div>
+                    <div class="relative w-96 mx-4">
+                        <input type="text" 
+                               id="gameSearch" 
+                               placeholder="Search games..." 
+                               class="w-full px-6 py-2 rounded-full bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 pl-12 text-base"
+                        >
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <nav>
+                        <ul class="flex space-x-6">
+                            <li><a href="https://playgame.click" class="hover:text-apple-blue transition-colors">Home</a></li>
+                            <li><a href="https://playgame.click/games" class="hover:text-apple-blue transition-colors">Games</a></li>
+                            <li><a href="https://playgame.click/about" class="hover:text-apple-blue transition-colors">About</a></li>
+                            <li><a href="https://playgame.click/contact" class="hover:text-apple-blue transition-colors">Contact</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- 将现有的侧边栏、header和footer保持不变 -->
+        
+        <!-- 在main区域添加内容容器 -->
+        <main class="container mx-auto px-4 py-8">
+            <div id="content-container"></div>
+        </main>
+        
+        <!-- 修改路由和内容加载相关的JavaScript -->
+        <!-- 在script标签中修改router对象的loadContent方法 -->
+        <script>
+        const router = {
+            async loadContent(path) {
+                const contentContainer = document.getElementById('content-container');
+                if (!contentContainer) {
+                    console.error('Content container not found');
+                    return;
+                }
+                
+                try {
+                    // 移除开头的 # 号（如果有）并处理空路径
+                    let normalizedPath = path.startsWith('#') ? path.slice(1) : path;
+                    // 如果路径为空或只有/，都视为首页
+                    normalizedPath = normalizedPath || '/';
+                    
+                    if (normalizedPath === '/' || normalizedPath === '/index.html') {
+                        // 加载主页内容
+                        const response = await fetch('/contents/home-content.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else if (normalizedPath.startsWith('/games/')) {  // 修改这里，添加前导斜杠
+                        // 加载游戏详情页面
+                        const response = await fetch('/contents/game-detail.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else if (normalizedPath === 'recent' || normalizedPath.startsWith('category/')) {
+                        // 加载主页内容用于显示游戏列表
+                        const response = await fetch('/contents/home-content.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else {
+                        throw new Error('Page not found');
+                    }
+
+                    // 如果页面包含Alpine.js组件，需要重新初始化
+                    if (window.Alpine) {
+                        window.Alpine.initTree(contentContainer);
+                    }
+                } catch (error) {
+                    console.error('Error loading content:', error);
+                    contentContainer.innerHTML = `
+                        <div class="p-8 text-center">
+                            <h2 class="text-2xl font-bold text-red-600 mb-4">Error Loading Content</h2>
+                            <p class="text-gray-600">${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+        };
+
+        // 处理页面内导航
+        // 处理页面内导航
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && link.href.startsWith(window.location.origin)) {
+                e.preventDefault();
+                // 如果链接已经包含hash，直接使用它
+                if (link.hash) {
+                    window.location.hash = link.hash.slice(1); // 移除开头的#
+                } else {
+                    // 否则使用pathname
+                    const path = link.pathname.slice(1); // 移除开头的/
+                    window.location.hash = path;
+                }
+            }
+        });
+
+        // 处理 hash 变化
+        window.addEventListener('hashchange', () => {
+            const path = window.location.hash.slice(1) || '/';
+            router.loadContent(path);
+        });
+
+        // 初始加载
+        document.addEventListener('DOMContentLoaded', () => {
+            const path = window.location.hash.slice(1) || '/';
+            router.loadContent(path);
+        });
+        </script>
+        
+        <footer class="bg-apple-black text-white py-8">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">PlayGame.click</h3>
+                        <p>Your destination for free online games. Play instantly in your browser without downloads.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="hover:text-apple-blue transition-colors">Popular Games</a></li>
+                            <li><a href="#" class="hover:text-apple-blue transition-colors">New Releases</a></li>
+                            <li><a href="#" class="hover:text-apple-blue transition-colors">Categories</a></li>
+                            <li><a href="#" class="hover:text-apple-blue transition-colors">Top Rated</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Legal</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="hover:text-apple-blue transition-colors">Privacy Policy</a></li>
+                            <li><a href="#" class="hover:text-apple-blue transition-colors">Terms of Service</a></li>
+                            <li><a href="#" class="hover:text-apple-blue transition-colors">Cookie Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                    <p>&copy; 2025 PlayGame.click. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            // 预加载图片以防止闪烁
+            window.addEventListener('DOMContentLoaded', function() {
+                const images = document.querySelectorAll('.game-thumbnail img');
+                images.forEach(img => {
+                    // 创建一个新的Image对象来预加载
+                    const preloadImg = new Image();
+                    preloadImg.src = img.src;
+                });
+            });
+            
+            // 全屏播放按钮功能
+            // document.querySelector('.btn-play').addEventListener('click', function() {
+            //     const iframe = document.querySelector('iframe');
+            //     if (iframe.requestFullscreen) {
+            //         iframe.requestFullscreen();
+            //     } else if (iframe.webkitRequestFullscreen) {
+            //         iframe.webkitRequestFullscreen();
+            //     } else if (iframe.msRequestFullscreen) {
+            //         iframe.msRequestFullscreen();
+            //     }
+            // });
+            
+            // 侧边栏功能
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            let sidebarExpanded = false;
+            
+            // 切换侧边栏状态
+            function toggleSidebar(expand) {
+                if (expand === null) {
+                    sidebarExpanded = !sidebarExpanded;
+                } else {
+                    sidebarExpanded = expand;
+                }
+                
+                sidebar.classList.toggle('sidebar-expanded', sidebarExpanded);
+                sidebar.classList.toggle('sidebar-collapsed', !sidebarExpanded);
+                content.classList.toggle('content-expanded', sidebarExpanded);
+                content.classList.toggle('content-shifted', !sidebarExpanded);
+            }
+            
+            // 点击按钮切换侧边栏
+            toggleBtn.addEventListener('click', () => toggleSidebar());
+            
+            // 鼠标悬停展开侧边栏
+            sidebar.addEventListener('mouseenter', () => {
+                toggleSidebar(true); // 强制展开
+            });
+            
+            // 鼠标离开收起侧边栏
+            sidebar.addEventListener('mouseleave', () => {
+                toggleSidebar(false); // 强制收起
+            });
+            
+            // 为导航项添加点击事件（示例）
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 这里可以添加导航逻辑，例如跳转到相应的游戏分类页面
+                    console.log('Navigate to:', this.querySelector('.nav-text').textContent);
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>
+
+
+
+<style>
+    /* 添加轮播样式 */
+    .featured-carousel {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    
+    .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 1rem;
+        pointer-events: none;
+    }
+    
+    .carousel-btn {
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        pointer-events: auto;
+        transition: background-color 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .carousel-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+    }
+    
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .carousel-dot.active {
+        background: white;
+    }
+</style>
+
+
+
