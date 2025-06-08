@@ -5,8 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlayGame.click - Your Ultimate Gaming Hub</title>
     <meta name="description" content="Play the best online games for free. Browse our collection of action, puzzle, strategy and more games. No downloads required!">
-    <link rel="canonical" href="https://playgame.click">
+    <link rel="canonical" href="https://www.playgame.click">
     <meta name="keywords" content="online games, free games, browser games, action games, puzzle games, strategy games">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-P6P09Y1XJL"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        
+        gtag('config', 'G-P6P09Y1XJL');
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 添加Font Awesome图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -294,7 +303,7 @@
             <div class="container mx-auto px-4 py-6">
                 <div class="flex items-center justify-between">
                     <div class="text-2xl font-bold text-apple-blue">
-                        <a href="https://playgame.click" class="hover:text-apple-darkblue transition-colors">PlayGame.click</a>
+                        <a href="https://www.playgame.click" class="hover:text-apple-darkblue transition-colors">PlayGame.click</a>
                     </div>
                     <div class="relative w-96 mx-4">
                         <input type="text" 
@@ -306,10 +315,10 @@
                     </div>
                     <nav>
                         <ul class="flex space-x-6">
-                            <li><a href="https://playgame.click" class="hover:text-apple-blue transition-colors">Home</a></li>
-                            <li><a href="https://playgame.click/games" class="hover:text-apple-blue transition-colors">Games</a></li>
-                            <li><a href="https://playgame.click/about" class="hover:text-apple-blue transition-colors">About</a></li>
-                            <li><a href="https://playgame.click/contact" class="hover:text-apple-blue transition-colors">Contact</a></li>
+                            <li><a href="https://www.playgame.click" class="hover:text-apple-blue transition-colors">Home</a></li>
+                            <li><a href="https://www.playgame.click/games" class="hover:text-apple-blue transition-colors">Games</a></li>
+                            <li><a href="https://www.playgame.click/about" class="hover:text-apple-blue transition-colors">About</a></li>
+                            <li><a href="https://www.playgame.click/contact" class="hover:text-apple-blue transition-colors">Contact</a></li>
                         </ul>
                     </nav>
                 </div>
@@ -335,9 +344,7 @@
                 }
                 
                 try {
-                    // 移除开头的 # 号（如果有）并处理空路径
                     let normalizedPath = path.startsWith('#') ? path.slice(1) : path;
-                    // 如果路径为空或只有/，都视为首页
                     normalizedPath = normalizedPath || '/';
                     
                     if (normalizedPath === '/' || normalizedPath === '/index.html') {
@@ -355,6 +362,22 @@
                     } else if (normalizedPath === 'recent' || normalizedPath.startsWith('category/')) {
                         // 加载主页内容用于显示游戏列表
                         const response = await fetch('/contents/home-content.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else if (normalizedPath === '/privacy-policy') {
+                        // 加载隐私政策页面
+                        const response = await fetch('/contents/privacy-policy.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else if (normalizedPath === '/terms-of-service') {
+                        const response = await fetch('/contents/terms-of-service.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else if (normalizedPath === '/cookie-policy') {
+                        const response = await fetch('/contents/cookie-policy.html');
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         const content = await response.text();
                         contentContainer.innerHTML = content;
@@ -427,9 +450,9 @@
                     <div>
                         <h3 class="text-xl font-bold mb-4">Legal</h3>
                         <ul class="space-y-2">
-                            <li><a href="#" class="hover:text-apple-blue transition-colors">Privacy Policy</a></li>
-                            <li><a href="#" class="hover:text-apple-blue transition-colors">Terms of Service</a></li>
-                            <li><a href="#" class="hover:text-apple-blue transition-colors">Cookie Policy</a></li>
+                            <li><a href="#/privacy-policy" class="hover:text-apple-blue transition-colors">Privacy Policy</a></li>
+                            <li><a href="#/terms-of-service" class="hover:text-apple-blue transition-colors">Terms of Service</a></li>
+                            <li><a href="#/cookie-policy" class="hover:text-apple-blue transition-colors">Cookie Policy</a></li>
                         </ul>
                     </div>
                 </div>
