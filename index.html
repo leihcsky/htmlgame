@@ -306,7 +306,7 @@
             <div class="container mx-auto px-4 py-6">
                 <div class="flex items-center justify-between">
                     <div class="text-2xl font-bold text-apple-blue">
-                        <a href="https://www.playgame.click" class="hover:text-apple-darkblue transition-colors">PlayGame.click</a>
+                        <a href="/" class="hover:text-apple-darkblue transition-colors">PlayGame.click</a>
                     </div>
                     <div class="relative w-96 mx-4">
                         <input type="text" 
@@ -318,10 +318,9 @@
                     </div>
                     <nav>
                         <ul class="flex space-x-6">
-                            <li><a href="https://www.playgame.click" class="hover:text-apple-blue transition-colors">Home</a></li>
-                            <li><a href="https://www.playgame.click/games" class="hover:text-apple-blue transition-colors">Games</a></li>
-                            <li><a href="https://www.playgame.click/about" class="hover:text-apple-blue transition-colors">About</a></li>
-                            <li><a href="https://www.playgame.click/contact" class="hover:text-apple-blue transition-colors">Contact</a></li>
+                            <li><a href="/" class="hover:text-apple-blue transition-colors">Home</a></li>
+                            <li><a href="#/about" class="hover:text-apple-blue transition-colors">About</a></li>
+                            <li><a href="#/contact" class="hover:text-apple-blue transition-colors">Contact</a></li>
                         </ul>
                     </nav>
                 </div>
@@ -381,6 +380,16 @@
                         contentContainer.innerHTML = content;
                     } else if (normalizedPath === '/cookie-policy') {
                         const response = await fetch('/contents/cookie-policy.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else if (normalizedPath === '/about') {
+                        const response = await fetch('/contents/about.html');
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const content = await response.text();
+                        contentContainer.innerHTML = content;
+                    } else if (normalizedPath === '/contact') {
+                        const response = await fetch('/contents/contact.html');
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         const content = await response.text();
                         contentContainer.innerHTML = content;
