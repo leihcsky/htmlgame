@@ -55,8 +55,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1" for="message">Message</label>
                     <textarea id="message" name="message" rows="4" class="w-full px-4 py-2 border rounded-md focus:ring-apple-blue focus:border-apple-blue" required></textarea>
                 </div>
-                <!-- 防垃圾邮件的蜜罐字段 -->
-                <input type="text" name="_gotcha" style="display:none">
+                <!-- 禁用重定向 -->
+                <input type="hidden" name="_next" value="">
                 <!-- 自定义邮件主题 -->
                 <input type="hidden" name="_subject" value="New Contact Form Submission - PlayGame.click">
                 <button type="submit" class="w-full bg-apple-blue text-white py-2 px-4 rounded-md hover:bg-apple-blue-dark transition-colors">
@@ -79,31 +79,48 @@ window.addEventListener('load', function() {
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        var formData = new FormData(form);
+        
+        // 显示发送中状态
+        formStatus.classList.remove('hidden');
+        formStatus.classList.add('bg-yellow-100');
+        formMessage.textContent = 'Sending message...';
+        formMessage.classList.add('text-yellow-700');
 
+        // 收集表单数据
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => data[key] = value);
+
+        // 使用 fetch 发送 JSON 数据
         fetch(form.action, {
             method: 'POST',
-            body: formData,
             headers: {
+                'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            }
+            },
+            body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => Promise.reject(data));
+            }
+            return response.json();
+        })
         .then(data => {
             // 显示成功消息
-            formStatus.classList.remove('hidden', 'bg-red-100');
+            formStatus.classList.remove('bg-yellow-100', 'bg-red-100');
             formStatus.classList.add('bg-green-100');
             formMessage.textContent = 'Thank you! Your message has been sent successfully.';
-            formMessage.classList.remove('text-red-700');
+            formMessage.classList.remove('text-yellow-700', 'text-red-700');
             formMessage.classList.add('text-green-700');
             form.reset(); // 清空表单
         })
         .catch(error => {
             // 显示错误消息
-            formStatus.classList.remove('hidden', 'bg-green-100');
+            formStatus.classList.remove('bg-yellow-100', 'bg-green-100');
             formStatus.classList.add('bg-red-100');
-            formMessage.textContent = 'Oops! There was a problem sending your message. Please try again.';
-            formMessage.classList.remove('text-green-700');
+            formMessage.textContent = error.errors ? error.errors.map(e => e.message).join(", ") : 'Oops! There was a problem sending your message. Please try again.';
+            formMessage.classList.remove('text-yellow-700', 'text-green-700');
             formMessage.classList.add('text-red-700');
         });
     });
